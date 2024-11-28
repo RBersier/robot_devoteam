@@ -29,6 +29,9 @@ def welcome_page():
     entryFrame.pack(side=TOP, pady=10)
 
     # Label
+    lblWelcome = Label(labelFrame, text="Welcome to the Robot Controller", font=("Arial", 15))
+    lblask = Label(labelFrame, text="", )
+
 
     # Entry
 
