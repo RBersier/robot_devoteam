@@ -10,6 +10,30 @@ Version : 0.1
 # librairy
 from tkinter import *
 
+def welcome_page():
+    # Create the window
+    home_page = Tk()
+    home_page.title("Welcome page")
+    height = 200
+    width = 250
+    home_page.geometry(f"{width}x{height}")
 
+    # Background color.
+    home_page.configure(background="grey")
 
+    # Frame
+    labelFrame = Frame(home_page, bg="grey")
+    entryFrame = Frame(home_page, bg="grey")
 
+    labelFrame.pack(side=TOP, pady=10)
+    entryFrame.pack(side=TOP, pady=10)
+
+    # Label
+
+    # Entry
+
+    # Launch window.
+    home_page.mainloop()
+
+if __name__ == "__main__":
+    welcome_page()
