@@ -3,8 +3,8 @@ Project : robot for devoteam
 Module : intership test
 Author : Ryan BERSIER
 Start date: 28.11.24
-Latest update: 08.10.24
-Version : 0.1
+Latest update: 29.11.24
+Version : 0.2
 """
 # Library
 from tkinter import *
@@ -79,19 +79,19 @@ def submit_commands():
     if not commands:
         messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
         return
-
-    # Validate commands
-    if not all(c in "LFR" for c in commands):
-        messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
-        return
-
+    order = list(commands)
+    # Valider les commandes
+    for i in range(len(order)):
+        if not (order[i] == "L" or order[i] == "F" or order[i] == "R"):
+            messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
+            return
     try:
         # Execute the movement
         result = mouvement(room_size, start_position, commands)
-        x, y, orientation = map(str, result.split())
+        x, y, orientation = result.split()
 
         # Update starting position for further movements
-        start_position = (int(x), int(y), orientation)
+        start_position = (int(x), int(y), str(orientation))
 
         # Display final position
         messagebox.showinfo("Position", f"The final position of the robot is:\n{x} {y} {orientation}")
@@ -111,28 +111,18 @@ def mouvement(room_size, start_position, commands):
     direction_index = orientations.index(orientation)
 
     # Define movement for each orientation
-    moves = {
-        'N': (-1, 0),  # Move up
-        'E': (0, 1),   # Move right
-        'S': (1, 0),   # Move down
-        'W': (0, -1)   # Move left
-    }
+    moves = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'W': (0, -1)}
 
     # Process commands
     for command in commands:
         if command == 'L':
             # Turn left
             direction_index = (direction_index - 1) % 4
-            dx, dy = moves[orientations[direction_index]]
-            x += dx
-            y += dy
         elif command == 'R':
             # Turn right
             direction_index = (direction_index + 1) % 4
-            dx, dy = moves[orientations[direction_index]]
-            x += dx
-            y += dy
-        elif command == 'F':
+
+        if command == 'F' or command == 'R' or command == 'L':
             # Move forward in the current direction
             dx, dy = moves[orientations[direction_index]]
             x += dx
