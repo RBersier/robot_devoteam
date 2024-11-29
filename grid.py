@@ -79,10 +79,13 @@ def mouvement():
     # Define direction mapping
     directions = {
         0: ("N", (-1, 0)),
-        1: ("E", (0, -1)),
+        1: ("E", (0, 1)),
         2: ("S", (1, 0)),
-        3: ("W", (0, 1))
+        3: ("W", (0, -1))
     }
+
+    # Define the starting position
+    pos_x, pos_y = rows // 2, cols // 2
 
     for letter in separated_letters:
         letter = letter.upper()
@@ -95,16 +98,20 @@ def mouvement():
             side = (side + 1) % 4
         elif letter == "R":
             side = (side - 1) % 4
+        elif letter == "F":
+            _, (dx, dy) = directions[side]
+            pos_x += dx
+            pos_y += dy
 
-        polar, (dx, dy) = directions[side]
+        # Check for grid boundaries
+        pos_x = max(0, min(rows - 1, pos_x))
+        pos_y = max(0, min(cols - 1, pos_y))
 
         # Reinitialize the grid
         grid_tile(gridFrame, rows, cols)
 
-        # Define the starting position
-        center_x, center_y = rows // 2, cols // 2
-        pos_x, pos_y = center_x + dx, center_y + dy
-
         # Update the tiles
-        tiles[center_x][center_y].configure(text=f"({center_x},{center_y})", bg="white")
+        for i in range(rows):
+            for j in range(cols):
+                tiles[i][j].configure(text=f"({i},{j})", bg="white")
         tiles[pos_x][pos_y].configure(text="🤖", bg="lightblue")
