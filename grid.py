@@ -11,19 +11,19 @@ from tkinter import *
 from tkinter import messagebox
 
 def grid_page(x, y):
-    global gridFrame, orderFrame, windowGrid, entryOrder, rows, cols
+    global gridFrame, orderFrame, windowGrid, entryOrder, rows, cols, room_size, start_position
     # Create the window
     windowGrid = Tk()
     windowGrid.title("Grid Page")
-    height = x*110
-    width = y*90
+    height = x * 110
+    width = y * 90
     if x <= 4:
-        height = height + 100
+        height += 100
     if y <= 2:
-        width = width + 100
+        width += 100
     windowGrid.geometry(f"{width}x{height}")
 
-    # Background color.
+    # Background color
     windowGrid.configure(background="grey")
 
     # Frames
@@ -39,16 +39,17 @@ def grid_page(x, y):
     lbltitle.pack(side=TOP)
 
     entryOrder = Entry(orderFrame, font=("Arial", 12))
-    btnOrder = Button(orderFrame, text="Submit", font=("Arial", 12), command=mouvement)
+    btnOrder = Button(orderFrame, text="Submit", font=("Arial", 12), command=submit_commands)
 
     entryOrder.pack(side=LEFT, padx=5)
     btnOrder.pack(side=LEFT, padx=5)
 
     rows, cols = x, y  # Grid size
-    grid_tile(gridFrame, rows, cols)
+    room_size = (x, y)
+    start_position = (x // 2, y // 2, 'N')  # Default starting position
+    grid_tile(gridFrame, rows, cols, start_position)
 
-
-def grid_tile(gridFrame, x, y):
+def grid_tile(gridFrame, x, y, start_position):
     global tiles
     # Store tiles in a list for easy access
     tiles = []
@@ -63,55 +64,91 @@ def grid_tile(gridFrame, x, y):
             row.append(tile)
         tiles.append(row)
 
-    # Add the robot at the center position
+    # Clear previous robot position and add it at the new position
     for i in range(x):
         for j in range(y):
-            if not tiles[i][j] == "🤖":
-                centerX, centerY = x // 2, y // 2
-                tiles[centerX][centerY].configure(text="🤖", bg="lightblue")
+            tiles[i][j].configure(text=f"({i},{j})", bg="white")
+
+    start_x, start_y, _ = start_position
+    tiles[start_x][start_y].configure(text="🤖", bg="lightblue")
+
+def submit_commands():
+    global room_size, start_position
+
+    commands = entryOrder.get().strip().upper()
+    if not commands:
+        messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
+        return
+
+    # Validate commands
+    if not all(c in "LFR" for c in commands):
+        messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
+        return
+
+    try:
+        # Execute the movement
+        result = mouvement(room_size, start_position, commands)
+        x, y, orientation = map(str, result.split())
+
+        # Update starting position for further movements
+        start_position = (int(x), int(y), orientation)
+
+        # Display final position
+        messagebox.showinfo("Position", f"The final position of the robot is:\n{x} {y} {orientation}")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
 
-def mouvement():
-    order_value = entryOrder.get()
-    separated_letters = list(order_value)
-    side = 0
+def mouvement(room_size, start_position, commands):
+    # Room dimensions
+    width, height = room_size
 
-    # Define direction mapping
-    directions = {
-        0: ("N", (-1, 0)),
-        1: ("E", (0, 1)),
-        2: ("S", (1, 0)),
-        3: ("W", (0, -1))
+    # Starting position and orientation
+    x, y, orientation = start_position
+
+    # Map orientations to index and vice versa
+    orientations = ['N', 'E', 'S', 'W']
+    direction_index = orientations.index(orientation)
+
+    # Define movement for each orientation
+    moves = {
+        'N': (-1, 0),  # Move up
+        'E': (0, 1),   # Move right
+        'S': (1, 0),   # Move down
+        'W': (0, -1)   # Move left
     }
 
-    # Define the starting position
-    pos_x, pos_y = rows // 2, cols // 2
+    # Process commands
+    for command in commands:
+        if command == 'L':
+            # Turn left
+            direction_index = (direction_index - 1) % 4
+            dx, dy = moves[orientations[direction_index]]
+            x += dx
+            y += dy
+        elif command == 'R':
+            # Turn right
+            direction_index = (direction_index + 1) % 4
+            dx, dy = moves[orientations[direction_index]]
+            x += dx
+            y += dy
+        elif command == 'F':
+            # Move forward in the current direction
+            dx, dy = moves[orientations[direction_index]]
+            x += dx
+            y += dy
 
-    for letter in separated_letters:
-        letter = letter.upper()
+            # Ensure the robot stays within bounds
+            x = max(0, min(height - 1, x))
+            y = max(0, min(width - 1, y))
 
-        if letter not in ["L", "F", "R"]:
-            messagebox.showerror("Invalid Input", "Only 3 letters are available (L = Left, F = Front, R = Right)")
-            return
+        # Update the grid after each move
+        grid_tile(gridFrame, rows, cols, (x, y, orientations[direction_index]))
+        windowGrid.update_idletasks()  # Refresh the window to reflect changes
 
-        if letter == "L":
-            side = (side + 1) % 4
-        elif letter == "R":
-            side = (side - 1) % 4
-        elif letter == "F":
-            _, (dx, dy) = directions[side]
-            pos_x += dx
-            pos_y += dy
+    # Final orientation
+    final_orientation = orientations[direction_index]
 
-        # Check for grid boundaries
-        pos_x = max(0, min(rows - 1, pos_x))
-        pos_y = max(0, min(cols - 1, pos_y))
+    # Return final position and orientation
+    return f"{x} {y} {final_orientation}"
 
-        # Reinitialize the grid
-        grid_tile(gridFrame, rows, cols)
-
-        # Update the tiles
-        for i in range(rows):
-            for j in range(cols):
-                tiles[i][j].configure(text=f"({i},{j})", bg="white")
-        tiles[pos_x][pos_y].configure(text="🤖", bg="lightblue")
