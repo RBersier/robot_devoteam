@@ -16,7 +16,7 @@ import grid
 def validate_input(value):
     try:
         number = int(value)
-        if number < 0 or number > 10:
+        if number < 1 or number > 9:
             raise ValueError
         return number
     except ValueError:
@@ -31,7 +31,7 @@ def submit_dimensions():
     deep = validate_input(deep_value)
 
     if wide is None or deep is None:
-        messagebox.showerror("Invalid Input", "Please enter numbers between 0 and 10 for both dimensions and don't send float numbers")
+        messagebox.showerror("Invalid Input", "Please enter numbers between 1 and 9 for both dimensions and don't send float numbers")
     else:
         home_page.destroy()
         grid.grid_page(wide, deep)
@@ -67,8 +67,8 @@ def welcome_page():
     lblask.pack(side=TOP)
 
     # Entry labels and fields
-    lblWide = Label(entryFrame, text="Wide (0-10):", font=("Arial", 12), bg="grey")
-    lblDeep = Label(entryFrame, text="Deep (0-10):", font=("Arial", 12), bg="grey")
+    lblWide = Label(entryFrame, text="Wide (1-9):", font=("Arial", 12), bg="grey")
+    lblDeep = Label(entryFrame, text="Deep (1-9):", font=("Arial", 12), bg="grey")
 
     wide_entry = Entry(entryFrame, font=("Arial", 12))
     deep_entry = Entry(entryFrame, font=("Arial", 12))
