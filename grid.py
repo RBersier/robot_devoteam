@@ -1,144 +1,170 @@
 """
-Project : robot for devoteam
-Module : intership test
-Author : Ryan BERSIER
-Start date: 28.11.24
-Latest update: 29.11.24
-Version : 0.2
+Project: Robot for Devoteam
+Module: Internship Test
+Author: Ryan BERSIER
+Start Date: 28.11.24
+Latest Update: 29.11.24
+Version: 0.2
 """
-# Library
+
+# Libraries
 from tkinter import *
 from tkinter import messagebox
+import time
 
-def grid_page(wide, deep, pos_x, pos_y, polar):
-    global gridFrame, orderFrame, windowGrid, entryOrder, rows, cols, room_size, start_position
-    # Create the window
-    windowGrid = Tk()
-    windowGrid.title("Grid Page")
-    height = wide * 110
-    width = deep * 90
-    if wide <= 4:
-        height += 100
-    if deep <= 2:
-        width += 100
-    windowGrid.geometry(f"{width}x{height}")
+def display_grid_page(grid_width, grid_height, start_x, start_y, start_orientation):
+    """
+    Displays the grid page where the robot is placed and controlled.
 
-    # Background color
-    windowGrid.configure(background="grey")
+    :param grid_width: Width of the grid (number of columns).
+    :param grid_height: Height of the grid (number of rows).
+    :param start_x: Starting x-coordinate of the robot.
+    :param start_y: Starting y-coordinate of the robot.
+    :param start_orientation: Starting orientation of the robot ('N', 'E', 'S', 'W').
+    """
+    global grid_frame, order_frame, grid_window, command_entry, grid_rows, grid_cols, grid_size, robot_position
 
-    # Frames
-    textFrame = Frame(windowGrid, bg="grey")
-    gridFrame = Frame(windowGrid, bg="grey")
-    orderFrame = Frame(windowGrid, bg="grey")
+    # Create the grid window
+    grid_window = Tk()
+    grid_window.title("Robot Grid Controller")
+    window_height = grid_height * 100
+    window_width = grid_width * 90
 
-    textFrame.pack(side=TOP, pady=10)
-    gridFrame.pack(side=TOP, pady=10)
-    orderFrame.pack(side=TOP, pady=10)
+    if grid_width <= 4:
+        window_height += 100
+    if grid_height <= 2:
+        window_width += 100
 
-    lbltitle = Label(textFrame, text="🤖 The robot grid 🤖", font=("Arial", 16), bg="grey")
-    lbltitle.pack(side=TOP)
+    grid_window.geometry(f"{window_width}x{window_height}")
+    grid_window.configure(background="grey")
 
-    entryOrder = Entry(orderFrame, font=("Arial", 12))
-    btnOrder = Button(orderFrame, text="Submit", font=("Arial", 12), command=submit_commands)
+    # Create frames for layout
+    title_frame = Frame(grid_window, bg="grey")
+    grid_frame = Frame(grid_window, bg="grey")
+    order_frame = Frame(grid_window, bg="grey")
 
-    entryOrder.pack(side=LEFT, padx=5)
-    btnOrder.pack(side=LEFT, padx=5)
+    title_frame.pack(side=TOP, pady=10)
+    grid_frame.pack(side=TOP, pady=10)
+    order_frame.pack(side=TOP, pady=10)
 
-    rows, cols = wide, deep  # Grid size
-    room_size = (wide, deep)
-    start_position = (pos_x, pos_y, polar)  # Default starting position
-    grid_tile(gridFrame, rows, cols, start_position)
+    # Add a title label
+    title_label = Label(title_frame, text="🤖 Robot Grid 🤖", font=("Arial", 24), bg="grey")
+    title_label.pack(side=TOP)
 
-def grid_tile(gridFrame, x, y, start_position):
-    global tiles
-    # Store tiles in a list for easy access
-    tiles = []
+    # Command input and submit button
+    command_entry = Entry(order_frame, font=("Arial", 12))
+    submit_button = Button(order_frame, text="Submit", font=("Arial", 12), command=process_commands)
 
-    # Create all the tiles
-    for i in range(x):
-        row = []
-        for j in range(y):
-            # Each "tile" is a Label with a border
-            tile = Label(gridFrame, text=f"({i},{j})", borderwidth=2, relief="solid", width=10, height=5, bg="white")
+    command_entry.pack(side=LEFT, padx=5)
+    submit_button.pack(side=LEFT, padx=5)
+
+    # Grid parameters
+    grid_rows, grid_cols = grid_width, grid_height
+    grid_size = (grid_width, grid_height)
+    robot_position = (start_x, start_y, start_orientation)
+
+    # Draw the grid
+    draw_grid(grid_frame, grid_rows, grid_cols, robot_position)
+
+
+def draw_grid(grid_frame, rows, cols, robot_position):
+    """
+    Creates a grid and places the robot in its initial position.
+
+    :param grid_frame: Frame where the grid is drawn.
+    :param rows: Number of rows in the grid.
+    :param cols: Number of columns in the grid.
+    :param robot_position: Tuple containing robot's starting x, y, and orientation.
+    """
+    global grid_tiles
+    grid_tiles = []
+
+    # Create the grid tiles
+    for i in range(rows):
+        row_tiles = []
+        for j in range(cols):
+            tile = Label(
+                grid_frame, text=f"({i},{j})", borderwidth=2, relief="solid", width=4, height=2, bg="white", font = ("Arial", 20))
             tile.grid(row=i, column=j)
-            row.append(tile)
-        tiles.append(row)
+            row_tiles.append(tile)
+        grid_tiles.append(row_tiles)
 
-    # Clear previous robot position and add it at the new position
-    for i in range(x):
-        for j in range(y):
-            tiles[i][j].configure(text=f"({i},{j})", bg="white")
+    # Set the robot's starting position
+    for i in range(rows):
+        for j in range(cols):
+            grid_tiles[i][j].configure(text=f"({i},{j})", bg="white")
 
-    start_x, start_y, _ = start_position
-    tiles[start_x][start_y].configure(text="🤖", bg="lightblue")
+    start_x, start_y, _ = robot_position
+    grid_tiles[start_x][start_y].configure(text="🤖", bg="lightblue")
 
-def submit_commands():
-    global room_size, start_position
 
-    commands = entryOrder.get().strip().upper()
+def process_commands():
+    """
+    Processes the commands entered by the user and updates the robot's position on the grid.
+    """
+    global grid_size, robot_position
+
+    # Get and validate commands
+    commands = command_entry.get().strip().upper()
     if not commands:
         messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
         return
-    order = list(commands)
-    # Valider les commandes
-    for i in range(len(order)):
-        if not (order[i] == "L" or order[i] == "F" or order[i] == "R"):
-            messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
-            return
+
+    valid_commands = set("LFR")
+    if not all(command in valid_commands for command in commands):
+        messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
+        return
+
     try:
         # Execute the movement
-        result = mouvement(room_size, start_position, commands)
-        x, y, orientation = result.split()
+        result = execute_movement(grid_size, robot_position, commands)
+        final_x, final_y, final_orientation = result.split()
 
-        # Update starting position for further movements
-        start_position = (int(x), int(y), str(orientation))
+        # Update the robot's position for future commands
+        robot_position = (int(final_x), int(final_y), final_orientation)
 
-        # Display final position
-        messagebox.showinfo("Position", f"The final position of the robot is:\n{x} {y} {orientation}")
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+        # Show final position
+        messagebox.showinfo("Robot Position", f"The final position is:\n{final_x} {final_y} {final_orientation}")
+    except Exception as error:
+        messagebox.showerror("Error", str(error))
 
 
-def mouvement(room_size, start_position, commands):
-    # Room dimensions
-    width, height = room_size
+def execute_movement(grid_size, start_position, commands):
+    """
+    Executes the movement commands for the robot.
 
-    # Starting position and orientation
+    :param grid_size: Tuple containing grid width and height.
+    :param start_position: Tuple containing robot's initial x, y, and orientation.
+    :param commands: String of commands (L, F, R).
+    :return: String with the final x, y, and orientation.
+    """
+    width, height = grid_size
     x, y, orientation = start_position
 
-    # Map orientations to index and vice versa
+    # Orientation mapping
     orientations = ['N', 'E', 'S', 'W']
     direction_index = orientations.index(orientation)
-
-    # Define movement for each orientation
     moves = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'W': (0, -1)}
 
-    # Process commands
     for command in commands:
         if command == 'L':
-            # Turn left
             direction_index = (direction_index - 1) % 4
         elif command == 'R':
-            # Turn right
             direction_index = (direction_index + 1) % 4
 
         if command == 'F' or command == 'R' or command == 'L':
-            # Move forward in the current direction
             dx, dy = moves[orientations[direction_index]]
-            x += dx
-            y += dy
+            new_x, new_y = x + dx, y + dy
 
-            # Ensure the robot stays within bounds
-            x = max(0, min(height - 1, x))
-            y = max(0, min(width - 1, y))
+            # Check boundaries
+            if 0 <= new_x < height and 0 <= new_y < width:
+                x, y = new_x, new_y
+            else:
+                messagebox.showwarning("Boundary Reached", "The robot cannot move outside the grid.")
 
-        # Update the grid after each move
-        grid_tile(gridFrame, rows, cols, (x, y, orientations[direction_index]))
-        windowGrid.update_idletasks()  # Refresh the window to reflect changes
+        # Update the grid for each move
+        draw_grid(grid_frame, grid_rows, grid_cols, (x, y, orientations[direction_index]))
+        grid_window.update_idletasks()  # Refresh the UI
+        time.sleep(0.1)
 
-    # Final orientation
-    final_orientation = orientations[direction_index]
-
-    # Return final position and orientation
-    return f"{x} {y} {final_orientation}"
-
+    return f"{x} {y} {orientations[direction_index]}"
