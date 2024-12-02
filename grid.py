@@ -3,8 +3,8 @@ Project: Robot for Devoteam
 Module: Internship Test
 Author: Ryan BERSIER
 Start Date: 28.11.24
-Latest Update: 29.11.24
-Version: 0.2
+Latest Update: 02.12.24
+Version: 0.3
 """
 
 # Libraries
@@ -74,28 +74,33 @@ def draw_grid(grid_frame, rows, cols, robot_position):
     :param grid_frame: Frame where the grid is drawn.
     :param rows: Number of rows in the grid.
     :param cols: Number of columns in the grid.
-    :param robot_position: Tuple containing robot's starting x, y, and orientation.
+    :param robot_position: Tuple containing the robot's starting x, y, and orientation.
     """
     global grid_tiles
     grid_tiles = []
 
-    # Create the grid tiles
+    # Create grid cells
     for i in range(rows):
         row_tiles = []
         for j in range(cols):
             tile = Label(
-                grid_frame, text=f"({i},{j})", borderwidth=2, relief="solid", width=4, height=2, bg="white", font = ("Arial", 20))
+                grid_frame, text=f"({i},{j})", borderwidth=2, relief="solid", width=4, height=2, bg="white", font=("Arial", 20))
             tile.grid(row=i, column=j)
             row_tiles.append(tile)
         grid_tiles.append(row_tiles)
 
-    # Set the robot's starting position
+    # Set the initial robot position
+    start_x, start_y, orientation = robot_position
     for i in range(rows):
         for j in range(cols):
             grid_tiles[i][j].configure(text=f"({i},{j})", bg="white")
 
-    start_x, start_y, _ = robot_position
-    grid_tiles[start_x][start_y].configure(text="🤖", bg="lightblue")
+    # Determine the emoji corresponding to the orientation
+    emoji_mapping = {'N': '🢁', 'E': '🢂', 'S': '🢃', 'W': '🢀'}
+    robot_emoji = emoji_mapping[orientation]
+
+    grid_tiles[start_x][start_y].configure(text=robot_emoji, bg="lightblue")
+
 
 
 def process_commands():
@@ -131,10 +136,10 @@ def process_commands():
 
 def execute_movement(grid_size, start_position, commands):
     """
-    Executes the movement commands for the robot.
+    Executes movement commands for the robot.
 
     :param grid_size: Tuple containing grid width and height.
-    :param start_position: Tuple containing robot's initial x, y, and orientation.
+    :param start_position: Tuple containing the robot's initial x, y, and orientation.
     :param commands: String of commands (L, F, R).
     :return: String with the final x, y, and orientation.
     """
@@ -148,12 +153,17 @@ def execute_movement(grid_size, start_position, commands):
 
     for command in commands:
         if command == 'L':
+            # Turn left
             direction_index = (direction_index - 1) % 4
         elif command == 'R':
+            # Turn right
             direction_index = (direction_index + 1) % 4
 
+        orientation = orientations[direction_index]
+        dx, dy = moves[orientation]
+
         if command == 'F' or command == 'R' or command == 'L':
-            dx, dy = moves[orientations[direction_index]]
+            # Move forward
             new_x, new_y = x + dx, y + dy
 
             # Check boundaries
@@ -162,9 +172,10 @@ def execute_movement(grid_size, start_position, commands):
             else:
                 messagebox.showwarning("Boundary Reached", "The robot cannot move outside the grid.")
 
-        # Update the grid for each move
-        draw_grid(grid_frame, grid_rows, grid_cols, (x, y, orientations[direction_index]))
+        # Update the grid
+        draw_grid(grid_frame, grid_rows, grid_cols, (x, y, orientation))
         grid_window.update_idletasks()  # Refresh the UI
         time.sleep(0.1)
 
-    return f"{x} {y} {orientations[direction_index]}"
+    return f"{x} {y} {orientation}"
+

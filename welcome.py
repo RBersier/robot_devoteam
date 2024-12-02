@@ -73,26 +73,17 @@ def submit_dimensions():
     depth = validate_input(depth_value)
 
     if width is None or depth is None:
-        messagebox.showerror(
-            "Invalid Input",
-            "Please enter numbers between 1 and 9 for both dimensions. Do not use float numbers."
-        )
+        messagebox.showerror("Invalid Input", "Please enter numbers between 1 and 9 for both dimensions. Do not use float numbers.")
         return
 
     x, y = validate_position(x_value, y_value, width, depth)
     if x is None or y is None:
-        messagebox.showerror(
-            "Invalid Position",
-            "Please ensure x and y are within grid bounds and not negative."
-        )
+        messagebox.showerror("Invalid Position", "Please ensure x and y are within grid bounds and not negative.")
         return
 
     polar = validate_polar(polar_value)
     if polar is None:
-        messagebox.showerror(
-            "Invalid Direction",
-            "Polar must be one of the following: N, E, S, W."
-        )
+        messagebox.showerror("Invalid Direction", "Polar must be one of the following: N, E, S, W.")
         return
 
     home_page.destroy()
@@ -130,8 +121,7 @@ def welcome_page():
 
     # Add labels
     lbl_welcome = Label(label_frame, text="Welcome to the Robot Controller", font=("Arial", 16), bg="grey")
-    lbl_ask = Label(label_frame, text="Can you give me the dimensions of your grid, please?", font=("Arial", 12),
-                    bg="grey")
+    lbl_ask = Label(label_frame, text="Can you give me the dimensions of your grid, please?", font=("Arial", 12), bg="grey")
 
     lbl_welcome.pack(side=TOP)
     lbl_ask.pack(side=TOP)
@@ -149,8 +139,7 @@ def welcome_page():
     depth_entry.grid(row=1, column=1, padx=5, pady=5)
 
     # Add position input fields
-    lbl_position = Label(question_frame, text="Can you give me the position of your robot?", font=("Arial", 12),
-                         bg="grey")
+    lbl_position = Label(question_frame, text="Can you give me the position of your robot?", font=("Arial", 12), bg="grey")
     lbl_position.pack(side=TOP)
 
     lbl_x = Label(position_frame, text="x:", font=("Arial", 12), bg="grey")
