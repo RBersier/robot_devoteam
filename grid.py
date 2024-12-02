@@ -10,16 +10,16 @@ Version : 0.2
 from tkinter import *
 from tkinter import messagebox
 
-def grid_page(x, y):
+def grid_page(wide, deep, pos_x, pos_y, polar):
     global gridFrame, orderFrame, windowGrid, entryOrder, rows, cols, room_size, start_position
     # Create the window
     windowGrid = Tk()
     windowGrid.title("Grid Page")
-    height = x * 110
-    width = y * 90
-    if x <= 4:
+    height = wide * 110
+    width = deep * 90
+    if wide <= 4:
         height += 100
-    if y <= 2:
+    if deep <= 2:
         width += 100
     windowGrid.geometry(f"{width}x{height}")
 
@@ -44,9 +44,9 @@ def grid_page(x, y):
     entryOrder.pack(side=LEFT, padx=5)
     btnOrder.pack(side=LEFT, padx=5)
 
-    rows, cols = x, y  # Grid size
-    room_size = (x, y)
-    start_position = (x // 2, y // 2, 'N')  # Default starting position
+    rows, cols = wide, deep  # Grid size
+    room_size = (wide, deep)
+    start_position = (pos_x, pos_y, polar)  # Default starting position
     grid_tile(gridFrame, rows, cols, start_position)
 
 def grid_tile(gridFrame, x, y, start_position):
