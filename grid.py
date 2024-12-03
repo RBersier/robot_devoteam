@@ -115,10 +115,11 @@ def process_commands():
         messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
         return
 
-    valid_commands = set("LFR")
-    if not all(command in valid_commands for command in commands):
-        messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
-        return
+    letter_commands = list(commands)
+    for i in range(len(letter_commands)):
+        if not (letter_commands[i] == "L" or letter_commands[i] == "F" or letter_commands[i] == "R"):
+            messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
+            return
 
     try:
         # Execute the movement
