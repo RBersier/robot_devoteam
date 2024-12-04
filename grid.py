@@ -100,8 +100,8 @@ def process_commands():
         # Update the robot's position for future commands
         robot_position = (int(final_x), int(final_y), final_orientation)
 
-        # Update the step counter (only for "F" commands)
-        step_counter += commands.count('F')
+        # Update the step counter
+        step_counter += commands.count('F') + commands.count('L') + commands.count('R')
         step_label.configure(text=f"Steps: {step_counter}")
 
         # Show final position
