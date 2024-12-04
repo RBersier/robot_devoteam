@@ -3,14 +3,17 @@ Project: Robot for Devoteam
 Module: Internship Test
 Author: Ryan BERSIER
 Start Date: 28.11.24
-Latest Update: 02.12.24
-Version: 0.3
+Latest Update: 04.12.24
+Version: 0.4
 """
 
 # Libraries
 from tkinter import *
 from tkinter import messagebox
 import time
+
+# Adding a variable to count how much steps maked by the robot
+step_counter = 0
 
 def display_grid_page(grid_width, grid_height, start_x, start_y, start_orientation):
     """
@@ -22,7 +25,7 @@ def display_grid_page(grid_width, grid_height, start_x, start_y, start_orientati
     :param start_y: Starting y-coordinate of the robot.
     :param start_orientation: Starting orientation of the robot ('N', 'E', 'S', 'W').
     """
-    global grid_frame, order_frame, grid_window, command_entry, grid_rows, grid_cols, grid_size, robot_position
+    global grid_frame, order_frame, grid_window, command_entry, grid_rows, grid_cols, grid_size, robot_position, step_label
 
     # Create the grid window
     grid_window = Tk()
@@ -51,6 +54,10 @@ def display_grid_page(grid_width, grid_height, start_x, start_y, start_orientati
     title_label = Label(title_frame, text="🤖 Robot Grid 🤖", font=("Arial", 24), bg="grey")
     title_label.pack(side=TOP)
 
+    # Step counter
+    step_label = Label(order_frame, text=f"Steps: {step_counter}", font=("Arial", 12), bg="grey")
+    step_label.pack(side=LEFT, padx=5)
+
     # Command input and submit button
     command_entry = Entry(order_frame, font=("Arial", 12))
     submit_button = Button(order_frame, text="Submit", font=("Arial", 12), command=process_commands)
@@ -65,6 +72,42 @@ def display_grid_page(grid_width, grid_height, start_x, start_y, start_orientati
 
     # Draw the grid
     draw_grid(grid_frame, grid_rows, grid_cols, robot_position)
+
+
+def process_commands():
+    """
+    Processes the commands entered by the user and updates the robot's position on the grid.
+    """
+    global grid_size, robot_position, step_counter
+
+    # Get and validate commands
+    commands = command_entry.get().strip().upper()
+    if not commands:
+        messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
+        return
+
+    letter_commands = list(commands)
+    for i in range(len(letter_commands)):
+        if not (letter_commands[i] == "L" or letter_commands[i] == "F" or letter_commands[i] == "R"):
+            messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
+            return
+
+    try:
+        # Execute the movement
+        result = execute_movement(grid_size, robot_position, commands)
+        final_x, final_y, final_orientation = result.split()
+
+        # Update the robot's position for future commands
+        robot_position = (int(final_x), int(final_y), final_orientation)
+
+        # Update the step counter (only for "F" commands)
+        step_counter += commands.count('F')
+        step_label.configure(text=f"Steps: {step_counter}")
+
+        # Show final position
+        messagebox.showinfo("Robot Position", f"The final position is:\n{final_x} {final_y} {final_orientation}")
+    except Exception as error:
+        messagebox.showerror("Error", str(error))
 
 
 def draw_grid(grid_frame, rows, cols, robot_position):
@@ -100,39 +143,6 @@ def draw_grid(grid_frame, rows, cols, robot_position):
     robot_emoji = emoji_mapping[orientation]
 
     grid_tiles[start_x][start_y].configure(text=robot_emoji, bg="lightblue")
-
-
-
-def process_commands():
-    """
-    Processes the commands entered by the user and updates the robot's position on the grid.
-    """
-    global grid_size, robot_position
-
-    # Get and validate commands
-    commands = command_entry.get().strip().upper()
-    if not commands:
-        messagebox.showerror("Invalid Input", "Please provide a sequence of commands (L, F, R).")
-        return
-
-    letter_commands = list(commands)
-    for i in range(len(letter_commands)):
-        if not (letter_commands[i] == "L" or letter_commands[i] == "F" or letter_commands[i] == "R"):
-            messagebox.showerror("Invalid Input", "Only L, F, R commands are allowed.")
-            return
-
-    try:
-        # Execute the movement
-        result = execute_movement(grid_size, robot_position, commands)
-        final_x, final_y, final_orientation = result.split()
-
-        # Update the robot's position for future commands
-        robot_position = (int(final_x), int(final_y), final_orientation)
-
-        # Show final position
-        messagebox.showinfo("Robot Position", f"The final position is:\n{final_x} {final_y} {final_orientation}")
-    except Exception as error:
-        messagebox.showerror("Error", str(error))
 
 
 def execute_movement(grid_size, start_position, commands):
