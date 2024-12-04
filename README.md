@@ -52,6 +52,14 @@ See commit history for more details.
 
 ---
 
+## Possible Upgrade
+
+- Replacing the arrows with an image to represent the robot.
+- Adding a step counter for the robot.
+- Adding a prediction the robot’s path based on the user’s input by highlighting the tiles or shows the path it has taken by highlighting the tiles once the commands are executed.
+
+---
+
 ## License  
 This project is not licensed.  
 
